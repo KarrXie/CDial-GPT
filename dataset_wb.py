@@ -102,7 +102,6 @@ class DialogDataModule(LightningDataModule):
         self.dataset_path = args.dataset_path
         self.tokenizer = BertTokenizer.from_pretrained(
             args.model_name_or_path, do_lower_case=True, never_split=["speaker1", "speaker2"])
-        self.dataset_cache = args.dataset_cache + '_' + type(self.tokenizer).__name__
         self.distributed = True if args.gpus > 1 else False
         self.replace_sampler = args.replace_sampler_ddp
         self.train_data_size = None
