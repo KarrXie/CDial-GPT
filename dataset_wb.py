@@ -40,11 +40,12 @@ class WBDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, index):
+        data = self.dialog_tokenize(self.data[index])
         if self.lm_labels:
-            history = self.data[index][:-1]
-            resposne = self.data[index][-1]
+            history = data[:-1]
+            resposne = data[-1]
         else:
-            history = self.data[index]
+            history = data
             resposne = []
         return self.process(history, resposne)
 
@@ -83,6 +84,14 @@ class WBDataset(Dataset):
             labels = [instance["lm_labels"] for instance in batch]
         return input_ids, token_type_ids, input_mask, labels
 
+    def dialog_tokenize(self, obj):
+        if isinstance(obj, str):
+            obj_token = self.tokenizer.tokenize(obj)
+            return self.tokenizer.convert_tokens_to_ids(deal_fake_unk(obj, obj_token))
+        elif isinstance(obj, list):
+            return list(self.dialog_tokenize(o) for o in obj)
+        else:
+            raise ValueError("obj should be type str or list")
 
 class DialogDataModule(LightningDataModule):
     def __init__(self, args):
