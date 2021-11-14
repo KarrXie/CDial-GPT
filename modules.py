@@ -4,14 +4,14 @@ import argparse
 from typing import Union, Dict
 from argparse import Namespace
 import pytorch_lightning as pl
-from transformers import AdamW, OpenAIGPTLMHeadModel
+from transformers import AdamW, OpenAIGPTLMHeadModel, RoFormerForCausalLM, RoFormerForMaskedLM
 from transformers.optimization import WarmupLinearSchedule, WarmupCosineSchedule, WarmupCosineWithHardRestartsSchedule
 from decoder import ChatBot
 from evaluate import eval_output
 
 logger = logging.getLogger(__name__)
 
-class GPT2Transformer(pl.LightningModule):
+class RoformerTransformer(pl.LightningModule):
 
     def __init__(self, dataset_module, tokenizer, hparams: Union[Dict, argparse.Namespace]):
         self.dataset_module = dataset_module

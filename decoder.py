@@ -14,7 +14,8 @@ class AutoRegressiveDecoder(object):
     """通用自回归生成模型解码基类
     包含beam search和random sample两种策略
     """
-    def __init__(self, start_id, end_id, maxlen, minlen=1):
+    def __init__(self, tokenizer, start_id, end_id, maxlen, minlen=1):
+        self.tokenizer = tokenizer
         self.start_id = start_id
         self.end_id = end_id
         self.maxlen = maxlen
@@ -211,5 +212,5 @@ class ChatBot(AutoRegressiveDecoder):
 
     def response(self, forword_fun, inputs, topk=1):
         results = self.random_sample(forword_fun, inputs, 1, topk)
-        results = [results.numpy() for result in results]
+        results = [result.numpy() for result in results]
         return [self.tokenizer.decode(results[0])]
