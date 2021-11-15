@@ -32,7 +32,7 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--test_only', action='store_true', help="only test model")
-    parser.add_argument('--train_batch_size', default=32, type=int)
+    parser.add_argument('--train_batch_size', default=8, type=int)
     parser.add_argument('--valid_batch_size', default=1, type=int)
     parser.add_argument('--seed', type=int, default=2020, help="used to fix random value")
     parser.add_argument('--dataset_path', default="", type=str, required=True, help="the train data directory")

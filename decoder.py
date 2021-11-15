@@ -37,6 +37,7 @@ class AutoRegressiveDecoder(object):
         def actual_decorator(predict):
             def new_predict(
                 self,
+                forward_fun,
                 inputs,
                 output_ids,
                 states,
@@ -44,7 +45,7 @@ class AutoRegressiveDecoder(object):
                 rtype=default_rtype
             ):
                 assert rtype in ['probas', 'logits']
-                prediction = predict(self, inputs, output_ids, states)
+                prediction = predict(self, forward_fun, inputs, output_ids, states)
 
                 if not use_states:
                     prediction = (prediction, None)
