@@ -9,7 +9,7 @@ from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADER
 from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
 from pytorch_lightning import LightningDataModule
-from transformers import cached_path, BertTokenizer
+from transformers import BertTokenizer
 
 IGNORED_ID = -1
 SPECIAL_TOKENS = ["[CLS]", "[SEP]", "speaker1", "speaker2"]

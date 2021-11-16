@@ -4,14 +4,15 @@ import argparse
 from typing import Union, Dict
 from argparse import Namespace
 import pytorch_lightning as pl
-from transformers import AdamW, OpenAIGPTLMHeadModel, RoFormerForCausalLM, RoFormerForMaskedLM
+from transformers import AdamW, OpenAIGPTLMHeadModel
 from transformers.optimization import WarmupLinearSchedule, WarmupCosineSchedule, WarmupCosineWithHardRestartsSchedule
 from decoder import ChatBot
 from evaluate import eval_output
 
 logger = logging.getLogger(__name__)
 
-class RoformerTransformer(pl.LightningModule):
+
+class GPT2Transformer(pl.LightningModule):
 
     def __init__(self, dataset_module, tokenizer, hparams: Union[Dict, argparse.Namespace]):
         self.dataset_module = dataset_module
@@ -31,9 +32,11 @@ class RoformerTransformer(pl.LightningModule):
     def training_step(self, batch, batch_ids):
         inputs = {"input_ids":batch[0], "token_type_ids": batch[1], "attention_mask": batch[2], "labels": batch[3]}
         loss = self(**inputs)
-        lr_scheduler = self.trainer.lr_schedulers[0]["scheduler"]
-        tensorboard_logs = {"loss":loss, "rate": lr_scheduler.get_last_lr()[-1]}
-        return {"loss": loss, "log":tensorboard_logs}
+        self.logger.experiment.add_scalar("Loss/train", loss, self.global_step)
+        # lr_scheduler = self.trainer.lr_schedulers[0]["scheduler"]
+        # tensorboard_logs = {"loss":loss, "rate": lr_scheduler.get_last_lr()[-1]}
+        # return {"loss": loss, "log": tensorboard_logs}
+        return loss
 
     def validation_step(self, batch, batch_ids):
         outputs = batch[-1]
@@ -42,15 +45,17 @@ class RoformerTransformer(pl.LightningModule):
         return {"f1":f1, "bleuave": bleuave, "ave": ave}
 
     def _eval_end(self, outputs):
-        f1_mean = np.mean([x["f1"] for x in outputs])
-        bleuave_mean = np.mean([x["bleuave"] for x in outputs])
-        ave_mean = np.mean([x["ave"] for x in outputs])
-        results = {"f1": f1_mean, "bleuave": bleuave_mean, "ave": ave_mean}
+        f1_mean = sum([x["f1"] for x in outputs]) / len(outputs)
+        bleuave_mean = sum([x["bleuave"] for x in outputs]) / len(outputs)
+        ave_mean = sum([x["ave"] for x in outputs]) / len(outputs)
+        results = {"f1": f1_mean, "bleuave": bleuave_mean, "ave_score": ave_mean}
         return results
 
     def validation_epoch_end(self, outputs: list):
         logs = self._eval_end(outputs)
-        return {"f1": logs["f1"], "log": logs, "pregress_bar":logs}
+        self.log("ave_score", logs["ave_score"], prog_bar=True, logger=True)
+        self.log("f1", logs["f1"], prog_bar=True, logger=True)
+        self.log("bleuave", logs["bleuave"], prog_bar=True, logger=True)
 
     def configure_optimizers(self):
         """Prepare optimizer and schedule (linear warmup and decay)"""

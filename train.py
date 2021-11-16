@@ -4,10 +4,12 @@ import random
 from pprint import pformat
 from argparse import ArgumentParser
 import pytorch_lightning as pl
+from pytorch_lightning.loggers import TensorBoardLogger
 from modules import GPT2Transformer
 from dataset_wb import DialogDataModule
 
-logger = logging.getLogger(__file__)
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+
 
 def main(args):
     pl.seed_everything((args.seed))
@@ -19,13 +21,14 @@ def main(args):
         verbose=True,
         monitor="val_loss",
         filename="epoch{}",
-        mode="max",
-        every_n_train_steps=1000,
+        mode="min",
+        every_n_train_steps=12000,
         save_weights_only=True
     )
+    logger = TensorBoardLogger("CDial_logs")
     lr_callback = pl.callbacks.LearningRateMonitor(logging_interval="step")
     callbacks = [checkpoint_callback, lr_callback]
-    trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks)
+    trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger)
     trainer.fit(model, datamodule=dialog_data_module)
 
 
