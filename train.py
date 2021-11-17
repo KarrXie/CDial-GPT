@@ -19,7 +19,7 @@ def main(args):
         dirpath=args.output_dir,
         save_top_k=10,
         verbose=True,
-        monitor="val_loss",
+        monitor="ave_score",
         filename="epoch{}",
         mode="min",
         every_n_train_steps=12000,
